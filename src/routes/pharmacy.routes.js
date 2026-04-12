@@ -1,7 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword, getPharmacyDashboard } = require('../controllers/pharmacy.controller');
+const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword, getPharmacyDashboard, getNearbyPharmacies } = require('../controllers/pharmacy.controller');
 const { protect } = require('../middlewares/auth.middleware');
+
+/**
+ * @swagger
+ * /api/pharmacies/nearby:
+ *   get:
+ *     summary: Trouver les pharmacies proches (pour l'app mobile)
+ *     tags: [Pharmacies]
+ *     parameters:
+ *       - in: query
+ *         name: lat
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Latitude de l'utilisateur
+ *       - in: query
+ *         name: lng
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Longitude de l'utilisateur
+ *       - in: query
+ *         name: radius
+ *         schema:
+ *           type: number
+ *           default: 5000
+ *         description: Rayon de recherche en mètres
+ *     responses:
+ *       200:
+ *         description: Pharmacies proches triées par distance
+ */
+// ⚠️ Cette route DOIT être AVANT les routes protégées
+router.get('/nearby', getNearbyPharmacies);
 
 /**
  * @swagger
@@ -12,34 +44,6 @@ const { protect } = require('../middlewares/auth.middleware');
  *     responses:
  *       200:
  *         description: Liste des pharmacies
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         format: uuid
- *                       nom:
- *                         type: string
- *                       adresse:
- *                         type: string
- *                       telephone:
- *                         type: string
- *                       email:
- *                         type: string
- *                       note:
- *                         type: number
- *       500:
- *         description: Erreur serveur
  */
 router.get('/', protect(['admin']), getAllPharmacies);
 

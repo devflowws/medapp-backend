@@ -173,10 +173,6 @@ exports.loginPharmacy = async (req, res, next) => {
       return res.status(401).json({ status: 'error', message: 'Identifiants incorrects' });
     }
 
-    if (!pharmacy.is_active) {
-      return res.status(403).json({ status: 'error', message: 'Pharmacie désactivée' });
-    }
-
     const token = generateToken(pharmacy.id, 'pharmacy');
     const refreshToken = generateRefreshToken(pharmacy.id, 'pharmacy');
 

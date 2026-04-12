@@ -3,14 +3,74 @@ const { Pharmacy, Order, Prescription, Message, sequelize } = require('../models
 exports.getAllPharmacies = async (req, res, next) => {
   try {
     const pharmacies = await Pharmacy.findAll({
-      attributes: { exclude: ['mot_de_passe', 'createdAt', 'updatedAt'] },
-      where: { is_active: true }
+      attributes: { exclude: ['mot_de_passe', 'createdAt', 'updatedAt'] }
     });
     res.json({ status: 'success', data: pharmacies });
   } catch (error) {
     next(error);
   }
 };
+
+// Get nearby pharmacies (for mobile app)
+exports.getNearbyPharmacies = async (req, res, next) => {
+  try {
+    const { lat, lng, radius = 5000 } = req.query; // radius in meters
+
+    if (!lat || !lng) {
+      return res.status(400).json({ status: 'error', message: 'Latitude et longitude requises' });
+    }
+
+    const pharmacies = await Pharmacy.findAll({
+      attributes: { exclude: ['mot_de_passe', 'createdAt', 'updatedAt'] }
+    });
+
+    // Calculate distance and sort
+    const nearby = pharmacies
+      .map(pharmacy => {
+        if (!pharmacy.latitude || !pharmacy.longitude) return null;
+        
+        const distance = calculateDistance(
+          parseFloat(lat),
+          parseFloat(lng),
+          parseFloat(pharmacy.latitude),
+          parseFloat(pharmacy.longitude)
+        );
+        
+        if (distance <= radius) {
+          return {
+            ...pharmacy.toJSON(),
+            distance: Math.round(distance), // in meters
+            distance_km: (distance / 1000).toFixed(1)
+          };
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.distance - b.distance);
+
+    res.json({ status: 'success', data: nearby });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Calculate distance between two points using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Earth radius in meters
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRad(degrees) {
+  return degrees * (Math.PI / 180);
+}
 
 exports.getPharmacyProfile = async (req, res, next) => {
   try {
