@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prescriptionController = require('../controllers/prescription.controller');
-// const { protect } = require('../middlewares/auth.middleware');
+const { protect } = require('../middlewares/auth.middleware');
 
 /**
  * @swagger
@@ -69,7 +69,7 @@ const prescriptionController = require('../controllers/prescription.controller')
  *       400:
  *         description: Erreur de validation
  */
-router.post('/', prescriptionController.createPrescription);
+router.post('/', protect(['admin', 'doctor']), prescriptionController.createPrescription);
 
 /**
  * @swagger
@@ -121,7 +121,7 @@ router.post('/', prescriptionController.createPrescription);
  *       404:
  *         description: Ordonnance non trouvée
  */
-router.get('/:id', prescriptionController.getPrescriptionById);
+router.get('/:id', protect(['admin', 'doctor', 'patient']), prescriptionController.getPrescriptionById);
 
 /**
  * @swagger
@@ -155,6 +155,6 @@ router.get('/:id', prescriptionController.getPrescriptionById);
  *       404:
  *         description: Patient non trouvé
  */
-router.get('/patient/:patientId', prescriptionController.getPatientPrescriptions);
+router.get('/patient/:patientId', protect(['admin', 'patient']), prescriptionController.getPatientPrescriptions);
 
 module.exports = router;

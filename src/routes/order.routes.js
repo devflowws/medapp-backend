@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/order.controller');
-
-// const { protect } = require('../middlewares/auth.middleware');
+const { protect } = require('../middlewares/auth.middleware');
 
 /**
  * @swagger
@@ -46,7 +45,7 @@ const orderController = require('../controllers/order.controller');
  *       400:
  *         description: L'ordonnance est requise
  */
-router.post('/', orderController.createOrder);
+router.post('/', protect(['admin', 'patient']), orderController.createOrder);
 
 /**
  * @swagger
@@ -80,7 +79,7 @@ router.post('/', orderController.createOrder);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/pharmacy/:pharmacyId', orderController.getPharmacyOrders);
+router.get('/pharmacy/:pharmacyId', protect(['admin', 'pharmacy']), orderController.getPharmacyOrders);
 
 /**
  * @swagger
@@ -114,7 +113,7 @@ router.get('/pharmacy/:pharmacyId', orderController.getPharmacyOrders);
  *       500:
  *         description: Erreur serveur
  */
-router.get('/patient/:patientId', orderController.getPatientOrders);
+router.get('/patient/:patientId', protect(['admin', 'patient']), orderController.getPatientOrders);
 
 /**
  * @swagger
@@ -163,6 +162,6 @@ router.get('/patient/:patientId', orderController.getPatientOrders);
  *       400:
  *         description: Statut invalide
  */
-router.put('/:id/status', orderController.updateOrderStatus);
+router.put('/:id/status', protect(['admin', 'pharmacy']), orderController.updateOrderStatus);
 
 module.exports = router;

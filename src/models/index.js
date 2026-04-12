@@ -10,6 +10,7 @@ const Order = require('./Order');
 const Message = require('./Message');
 const OtpToken = require('./OtpToken');
 const AuditLog = require('./AuditLog');
+const Admin = require('./Admin');
 
 // Définitions des relations (Associations Sequelize)
 
@@ -51,5 +52,6 @@ module.exports = {
   Order,
   Message,
   OtpToken,
-  AuditLog
+  AuditLog,
+  Admin
 };

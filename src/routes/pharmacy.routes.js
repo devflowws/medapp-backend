@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const pharmacyController = require('../controllers/pharmacy.controller');
+const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword } = require('../controllers/pharmacy.controller');
+const { protect } = require('../middlewares/auth.middleware');
 
 /**
  * @swagger
@@ -40,7 +41,7 @@ const pharmacyController = require('../controllers/pharmacy.controller');
  *       500:
  *         description: Erreur serveur
  */
-router.get('/', pharmacyController.getAllPharmacies);
+router.get('/', protect(['admin']), getAllPharmacies);
 
 /**
  * @swagger
@@ -83,6 +84,98 @@ router.get('/', pharmacyController.getAllPharmacies);
  *                   type: string
  *                   example: "Pharmacie non trouvée"
  */
-router.get('/:id', pharmacyController.getPharmacyProfile);
+router.get('/:id', protect(['admin', 'pharmacy']), getPharmacyProfile);
+
+/**
+ * @swagger
+ * /api/pharmacies/{id}:
+ *   put:
+ *     summary: Mettre à jour une pharmacie
+ *     tags: [Pharmacies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nom:
+ *                 type: string
+ *               adresse:
+ *                 type: string
+ *               telephone:
+ *                 type: string
+ *               horaires:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Pharmacie mise à jour
+ *       404:
+ *         description: Pharmacie non trouvée
+ */
+router.put('/:id', protect(['admin', 'pharmacy']), updatePharmacy);
+
+/**
+ * @swagger
+ * /api/pharmacies/{id}:
+ *   delete:
+ *     summary: Supprimer une pharmacie
+ *     tags: [Pharmacies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Pharmacie supprimée
+ *       404:
+ *         description: Pharmacie non trouvée
+ */
+router.delete('/:id', protect(['admin']), deletePharmacy);
+
+/**
+ * @swagger
+ * /api/pharmacies/{id}/change-password:
+ *   post:
+ *     summary: Changer le mot de passe d'une pharmacie
+ *     tags: [Pharmacies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [current_password, new_password]
+ *             properties:
+ *               current_password:
+ *                 type: string
+ *                 format: password
+ *               new_password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Mot de passe modifié
+ *       401:
+ *         description: Mot de passe actuel incorrect
+ */
+router.post('/:id/change-password', protect(['admin', 'pharmacy']), changePassword);
 
 module.exports = router;

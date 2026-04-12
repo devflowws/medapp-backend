@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const patientController = require('../controllers/patient.controller');
+const { protect } = require('../middlewares/auth.middleware');
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ const patientController = require('../controllers/patient.controller');
  *       404:
  *         description: Patient non trouvé
  */
-router.get('/:id', patientController.getPatientProfile);
+router.get('/:id', protect(['admin', 'patient']), patientController.getPatientProfile);
 
 /**
  * @swagger
@@ -91,6 +92,6 @@ router.get('/:id', patientController.getPatientProfile);
  *       404:
  *         description: Patient non trouvé
  */
-router.put('/:id', patientController.updatePatientProfile);
+router.put('/:id', protect(['admin', 'patient']), patientController.updatePatientProfile);
 
 module.exports = router;

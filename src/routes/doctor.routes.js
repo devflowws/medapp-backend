@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const doctorController = require('../controllers/doctor.controller');
-// const { protect } = require('../middlewares/auth.middleware');
+const { verifyDoctor, verifyByQRCode } = require('../controllers/doctor-verify.controller');
+const { protect } = require('../middlewares/auth.middleware');
 
 /**
  * @swagger
@@ -41,7 +42,7 @@ const doctorController = require('../controllers/doctor.controller');
  *       500:
  *         description: Erreur serveur
  */
-router.get('/', doctorController.getAllDoctors);
+router.get('/', protect(['admin', 'patient']), doctorController.getAllDoctors);
 
 /**
  * @swagger
@@ -84,7 +85,7 @@ router.get('/', doctorController.getAllDoctors);
  *                   type: string
  *                   example: "Médecin non trouvé"
  */
-router.get('/:id', doctorController.getDoctorById);
+router.get('/:id', protect(['admin', 'patient']), doctorController.getDoctorById);
 
 /**
  * @swagger
@@ -156,6 +157,82 @@ router.get('/:id', doctorController.getDoctorById);
  *                   type: string
  *                   example: "Un médecin avec ce matricule existe déjà"
  */
-router.post('/', doctorController.createDoctor);
+router.post('/', protect(['admin']), doctorController.createDoctor);
+
+/**
+ * @swagger
+ * /api/doctors/verify/{matricule}:
+ *   get:
+ *     summary: Vérifier un médecin par matricule (scan QR Code)
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: matricule
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Matricule du médecin à vérifier
+ *     responses:
+ *       200:
+ *         description: Médecin vérifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 is_valid:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Médecin vérifié avec succès"
+ *                 data:
+ *                   type: object
+ *       404:
+ *         description: Médecin non trouvé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "error"
+ *                 is_valid:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Médecin non trouvé. Vérifiez le matricule."
+ *       403:
+ *         description: Médecin inactif
+ */
+router.get('/verify/:matricule', verifyDoctor);
+
+/**
+ * @swagger
+ * /api/doctors/verify-qr:
+ *   post:
+ *     summary: Vérifier un médecin par QR Code
+ *     tags: [Doctors]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [qrCodeUrl]
+ *             properties:
+ *               qrCodeUrl:
+ *                 type: string
+ *                 example: "https://example.com/qr/abc123"
+ *     responses:
+ *       200:
+ *         description: Médecin vérifié via QR Code
+ */
+router.post('/verify-qr', verifyByQRCode);
 
 module.exports = router;

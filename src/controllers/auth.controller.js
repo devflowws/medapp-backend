@@ -1,5 +1,5 @@
 const { Patient, Pharmacy } = require('../models');
-const { generateToken } = require('../utils/jwt.util');
+const { generateToken, generateRefreshToken, verifyToken } = require('../utils/jwt.util');
 
 // ===== Authentification Patient =====
 
@@ -17,10 +17,12 @@ exports.registerPatient = async (req, res, next) => {
     });
 
     const token = generateToken(patient.id, 'patient');
+    const refreshToken = generateRefreshToken(patient.id, 'patient');
 
     res.status(201).json({
       status: 'success',
       token,
+      refreshToken,
       data: {
         id: patient.id,
         nom: patient.nom,
@@ -35,7 +37,7 @@ exports.registerPatient = async (req, res, next) => {
 
 exports.loginPatient = async (req, res, next) => {
   try {
-    const { identifiant, mot_de_passe } = req.body; // identifiant = email, tel ou username
+    const { identifiant, mot_de_passe } = req.body;
 
     let patient = await Patient.findOne({ where: { email: identifiant } });
     if (!patient) patient = await Patient.findOne({ where: { nom_utilisateur: identifiant } });
@@ -46,10 +48,12 @@ exports.loginPatient = async (req, res, next) => {
     }
 
     const token = generateToken(patient.id, 'patient');
+    const refreshToken = generateRefreshToken(patient.id, 'patient');
 
     res.json({
       status: 'success',
       token,
+      refreshToken,
       data: {
         id: patient.id,
         nom: patient.nom,
@@ -64,6 +68,39 @@ exports.loginPatient = async (req, res, next) => {
 
 // ===== Authentification Pharmacie =====
 
+exports.registerPharmacy = async (req, res, next) => {
+  try {
+    const { nom, adresse, telephone, email, mot_de_passe, horaires, latitude, longitude } = req.body;
+
+    const pharmacyExists = await Pharmacy.findOne({ where: { email } });
+    if (pharmacyExists) {
+      return res.status(400).json({ status: 'error', message: 'Cet email est déjà utilisé' });
+    }
+
+    const pharmacy = await Pharmacy.create({
+      nom, adresse, telephone, email, mot_de_passe, horaires, latitude, longitude
+    });
+
+    const token = generateToken(pharmacy.id, 'pharmacy');
+    const refreshToken = generateRefreshToken(pharmacy.id, 'pharmacy');
+
+    res.status(201).json({
+      status: 'success',
+      token,
+      refreshToken,
+      data: {
+        id: pharmacy.id,
+        nom: pharmacy.nom,
+        adresse: pharmacy.adresse,
+        telephone: pharmacy.telephone,
+        role: 'pharmacy'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.loginPharmacy = async (req, res, next) => {
   try {
     const { email, mot_de_passe } = req.body;
@@ -74,14 +111,21 @@ exports.loginPharmacy = async (req, res, next) => {
       return res.status(401).json({ status: 'error', message: 'Identifiants incorrects' });
     }
 
+    if (!pharmacy.is_active) {
+      return res.status(403).json({ status: 'error', message: 'Pharmacie désactivée' });
+    }
+
     const token = generateToken(pharmacy.id, 'pharmacy');
+    const refreshToken = generateRefreshToken(pharmacy.id, 'pharmacy');
 
     res.json({
       status: 'success',
       token,
+      refreshToken,
       data: {
         id: pharmacy.id,
         nom: pharmacy.nom,
+        adresse: pharmacy.adresse,
         role: 'pharmacy'
       }
     });
@@ -89,3 +133,28 @@ exports.loginPharmacy = async (req, res, next) => {
     next(error);
   }
 };
+
+// ===== Refresh Token =====
+exports.refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ status: 'error', message: 'Refresh token requis' });
+    }
+
+    const decoded = verifyToken(refreshToken);
+
+    const newToken = generateToken(decoded.id, decoded.role);
+    const newRefreshToken = generateRefreshToken(decoded.id, decoded.role);
+
+    res.json({
+      status: 'success',
+      token: newToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    return res.status(401).json({ status: 'error', message: 'Refresh token invalide ou expiré' });
+  }
+};
+

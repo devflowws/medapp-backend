@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../controllers/message.controller');
+const { protect } = require('../middlewares/auth.middleware');
+
+router.post('/', protect(['admin', 'patient', 'pharmacy']), messageController.sendMessage);
+router.get('/order/:orderId', protect(['admin', 'patient', 'pharmacy']), messageController.getOrderMessages);
 
 /**
  * @swagger

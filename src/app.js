@@ -34,7 +34,7 @@ app.get('/api/health', (req, res) => {
 
 // Importation des routes (à décommenter au fur et à mesure de leur création)
 app.use('/api/auth', require('./routes/auth.routes'));
-// app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/doctors', require('./routes/doctor.routes'));
 app.use('/api/patients', require('./routes/patient.routes'));
 app.use('/api/pharmacies', require('./routes/pharmacy.routes'));
