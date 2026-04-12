@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword } = require('../controllers/pharmacy.controller');
+const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword, getPharmacyDashboard } = require('../controllers/pharmacy.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
 /**
@@ -177,5 +177,24 @@ router.delete('/:id', protect(['admin']), deletePharmacy);
  *         description: Mot de passe actuel incorrect
  */
 router.post('/:id/change-password', protect(['admin', 'pharmacy']), changePassword);
+
+/**
+ * @swagger
+ * /api/pharmacies/{pharmacyId}/dashboard:
+ *   get:
+ *     summary: Récupérer les statistiques du tableau de bord pharmacie
+ *     tags: [Pharmacies]
+ *     parameters:
+ *       - in: path
+ *         name: pharmacyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Statistiques du tableau de bord
+ */
+router.get('/:pharmacyId/dashboard', protect(['pharmacy']), getPharmacyDashboard);
 
 module.exports = router;

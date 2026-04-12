@@ -161,6 +161,82 @@ router.post('/', protect(['admin']), doctorController.createDoctor);
 
 /**
  * @swagger
+ * /api/doctors/{id}:
+ *   put:
+ *     summary: Mettre à jour un médecin
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Médecin mis à jour
+ *       404:
+ *         description: Médecin non trouvé
+ */
+router.put('/:id', protect(['admin']), doctorController.updateDoctor);
+
+/**
+ * @swagger
+ * /api/doctors/{id}:
+ *   delete:
+ *     summary: Supprimer un médecin
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Médecin supprimé
+ *       404:
+ *         description: Médecin non trouvé
+ */
+router.delete('/:id', protect(['admin']), doctorController.deleteDoctor);
+
+/**
+ * @swagger
+ * /api/doctors/{id}/status:
+ *   patch:
+ *     summary: Activer/Désactiver un médecin
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Statut mis à jour
+ */
+router.patch('/:id/status', protect(['admin']), doctorController.toggleDoctorStatus);
+
+/**
+ * @swagger
  * /api/doctors/verify/{matricule}:
  *   get:
  *     summary: Vérifier un médecin par matricule (scan QR Code)

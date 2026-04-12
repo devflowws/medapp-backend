@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerPatient, loginPatient, registerPharmacy, loginPharmacy, refreshToken } = require('../controllers/auth.controller');
+const { registerPatient, loginPatient, registerPharmacy, loginPharmacy, refreshToken, verifyPharmacy, resendVerificationCode } = require('../controllers/auth.controller');
 const {
   registerAdmin,
   loginAdmin,
@@ -191,6 +191,61 @@ router.post('/patient/login', loginPatient);
  *                   example: "Identifiants incorrects"
  */
 router.post('/pharmacy/login', loginPharmacy);
+
+/**
+ * @swagger
+ * /api/auth/pharmacy/verify:
+ *   post:
+ *     summary: Vérifier le compte pharmacie avec le code 2FA
+ *     tags: [Auth - Pharmacie]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Compte vérifié avec succès
+ *       400:
+ *         description: Code invalide ou expiré
+ *       404:
+ *         description: Pharmacie non trouvée
+ */
+router.post('/pharmacy/verify', verifyPharmacy);
+
+/**
+ * @swagger
+ * /api/auth/pharmacy/resend-code:
+ *   post:
+ *     summary: Renvoyer le code de vérification
+ *     tags: [Auth - Pharmacie]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Code renvoyé
+ *       404:
+ *         description: Pharmacie non trouvée
+ */
+router.post('/pharmacy/resend-code', resendVerificationCode);
 
 /**
  * @swagger

@@ -1,4 +1,4 @@
-const { Pharmacy } = require('../models');
+const { Pharmacy, Order, Prescription, Message, sequelize } = require('../models');
 
 exports.getAllPharmacies = async (req, res, next) => {
   try {
@@ -91,6 +91,66 @@ exports.changePassword = async (req, res, next) => {
     await pharmacy.save();
 
     res.json({ status: 'success', message: 'Mot de passe modifié avec succès' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getPharmacyDashboard = async (req, res, next) => {
+  try {
+    const { pharmacyId } = req.params;
+
+    // Stats du jour
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [
+      pendingOrders,
+      acceptedOrders,
+      deliveredOrders,
+      refusedOrders,
+      todayOrders,
+      totalRevenue
+    ] = await Promise.all([
+      Order.count({ where: { pharmacie_id: pharmacyId, statut: 'en_attente' } }),
+      Order.count({ where: { pharmacie_id: pharmacyId, statut: 'accepte' } }),
+      Order.count({ where: { pharmacie_id: pharmacyId, statut: 'livre' } }),
+      Order.count({ where: { pharmacie_id: pharmacyId, statut: 'refuse' } }),
+      Order.count({
+        where: {
+          pharmacie_id: pharmacyId,
+          created_at: { [sequelize.Op.gte]: today }
+        }
+      }),
+      Order.sum('montant_total', { where: { pharmacie_id: pharmacyId, statut: 'livre' } })
+    ]);
+
+    // Commandes récentes (dernières 10)
+    const recentOrders = await Order.findAll({
+      where: { pharmacie_id: pharmacyId },
+      include: [{
+        model: Prescription,
+        attributes: ['id', 'type', 'nom_hopital']
+      }],
+      order: [['created_at', 'DESC']],
+      limit: 10,
+      attributes: ['id', 'statut', 'requiert_ordonnance', 'created_at']
+    });
+
+    res.json({
+      status: 'success',
+      data: {
+        stats: {
+          pending: pendingOrders || 0,
+          accepted: acceptedOrders || 0,
+          delivered: deliveredOrders || 0,
+          refused: refusedOrders || 0,
+          today: todayOrders || 0,
+          revenue: totalRevenue || 0
+        },
+        recentOrders
+      }
+    });
   } catch (error) {
     next(error);
   }

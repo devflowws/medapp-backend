@@ -30,6 +30,14 @@ const Order = sequelize.define('Order', {
   message_pharmacie: {
     type: DataTypes.TEXT,
     allowNull: true,
+  },
+  montant_total: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
+  },
+  prix_items: {
+    type: DataTypes.JSONB,
+    allowNull: true,
   }
 }, {
   tableName: 'orders',

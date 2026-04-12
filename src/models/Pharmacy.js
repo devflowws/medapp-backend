@@ -47,7 +47,23 @@ const Pharmacy = sequelize.define('Pharmacy', {
   note: {
     type: DataTypes.DECIMAL(2, 1), // évaluation optionnelle par les patients sur 5.0
     defaultValue: 0.0,
-  }
+  },
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+  is_verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  verification_code: {
+    type: DataTypes.STRING(6),
+    allowNull: true,
+  },
+  verification_code_expires_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 }, {
   tableName: 'pharmacies',
   timestamps: true,
