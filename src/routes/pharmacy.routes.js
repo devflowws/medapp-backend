@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword, getPharmacyDashboard, getNearbyPharmacies } = require('../controllers/pharmacy.controller');
+const { getAllPharmacies, getPharmacyProfile, updatePharmacy, deletePharmacy, changePassword, getPharmacyDashboard, getNearbyPharmacies, getAllPublicPharmacies } = require('../controllers/pharmacy.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
 /**
@@ -34,6 +34,18 @@ const { protect } = require('../middlewares/auth.middleware');
  */
 // ⚠️ Cette route DOIT être AVANT les routes protégées
 router.get('/nearby', getNearbyPharmacies);
+
+/**
+ * @swagger
+ * /api/pharmacies/public:
+ *   get:
+ *     summary: Liste publique de toutes les pharmacies (pour l'app mobile)
+ *     tags: [Pharmacies]
+ *     responses:
+ *       200:
+ *         description: Liste des pharmacies
+ */
+router.get('/public', getAllPublicPharmacies);
 
 /**
  * @swagger

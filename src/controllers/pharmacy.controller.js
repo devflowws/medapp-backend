@@ -11,17 +11,32 @@ exports.getAllPharmacies = async (req, res, next) => {
   }
 };
 
+// Public endpoint - toutes les pharmacies actives (pour l'app mobile)
+exports.getAllPublicPharmacies = async (req, res, next) => {
+  try {
+    const pharmacies = await Pharmacy.findAll({
+      where: { is_active: true, is_verified: true },
+      attributes: { exclude: ['mot_de_passe', 'verification_code', 'verification_code_expires_at', 'createdAt', 'updatedAt'] },
+      order: [['nom', 'ASC']]
+    });
+    res.json({ status: 'success', data: pharmacies });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get nearby pharmacies (for project mobile app)
 exports.getNearbyPharmacies = async (req, res, next) => {
   try {
-    const { lat, lng, radius = 5000 } = req.query; // radius in meters
+    const { lat, lng, radius = 50000 } = req.query;
 
     if (!lat || !lng) {
       return res.status(400).json({ status: 'error', message: 'Latitude et longitude requises' });
     }
 
     const pharmacies = await Pharmacy.findAll({
-      attributes: { exclude: ['mot_de_passe', 'createdAt', 'updatedAt'] }
+      where: { is_active: true, is_verified: true },
+      attributes: { exclude: ['mot_de_passe', 'verification_code', 'verification_code_expires_at', 'createdAt', 'updatedAt'] }
     });
 
     // Calculate distance and sort
