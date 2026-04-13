@@ -11,7 +11,7 @@ exports.getAllPharmacies = async (req, res, next) => {
   }
 };
 
-// Get nearby pharmacies (for mobile app)
+// Get nearby pharmacies (for project mobile app)
 exports.getNearbyPharmacies = async (req, res, next) => {
   try {
     const { lat, lng, radius = 5000 } = req.query; // radius in meters
