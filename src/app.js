@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // Importation des middlewares globaux
 const errorHandler = require('./middlewares/errorHandler.middleware');
@@ -14,6 +15,9 @@ const swaggerSpec = require('./config/swagger');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir les fichiers uploadés
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Swagger UI Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

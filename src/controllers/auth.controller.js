@@ -57,7 +57,7 @@ const sendVerificationEmail = async (email, code, pharmacyName) => {
 
 exports.registerPatient = async (req, res, next) => {
   try {
-    const { nom, prenoms, nom_utilisateur, email, telephone, mot_de_passe } = req.body;
+    const { nom, prenoms, nom_utilisateur, email, telephone, mot_de_passe, date_naissance, adresse, photo_url } = req.body;
 
     const patientExists = await Patient.findOne({ where: { email } });
     if (patientExists) {
@@ -65,7 +65,8 @@ exports.registerPatient = async (req, res, next) => {
     }
 
     const patient = await Patient.create({
-      nom, prenoms, nom_utilisateur, email, telephone, mot_de_passe
+      nom, prenoms, nom_utilisateur, email, telephone, mot_de_passe,
+      date_naissance, adresse, photo_url
     });
 
     const token = generateToken(patient.id, 'patient');

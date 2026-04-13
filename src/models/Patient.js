@@ -34,6 +34,18 @@ const Patient = sequelize.define('Patient', {
     unique: true,
     allowNull: false,
   },
+  photo_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  date_naissance: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  adresse: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
   mot_de_passe: {
     type: DataTypes.STRING(255),
     allowNull: false,
