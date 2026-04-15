@@ -7,10 +7,32 @@ exports.createPrescription = async (req, res, next) => {
   try {
     const { medecin_id, patient_id, type, nom_hopital, note, periode_validite, unite_periode, items } = req.body;
 
+    // Si c'est un patient qui crée l'ordonnance, vérifier que medecin_id est fourni
+    if (req.user.role === 'patient') {
+      if (!medecin_id) {
+        return res.status(400).json({ 
+          status: 'error', 
+          message: 'medecin_id requis pour un patient' 
+        });
+      }
+      
+      // Vérifier que le médecin existe et est actif
+      const doctor = await Doctor.findByPk(medecin_id);
+      if (!doctor || !doctor.is_active) {
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Médecin non trouvé ou inactif' 
+        });
+      }
+    }
+
+    // Pour les patients, utiliser leur propre ID si patient_id n'est pas fourni
+    const finalPatientId = patient_id || (req.user.role === 'patient' ? req.user.id : patient_id);
+
     // 1. Créer la prescription
     const prescription = await Prescription.create({
       medecin_id,
-      patient_id,
+      patient_id: finalPatientId,
       type,
       nom_hopital,
       note,

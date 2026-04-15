@@ -69,7 +69,7 @@ const { protect } = require('../middlewares/auth.middleware');
  *       400:
  *         description: Erreur de validation
  */
-router.post('/', protect(['admin', 'doctor']), prescriptionController.createPrescription);
+router.post('/', protect(['admin', 'doctor', 'patient']), prescriptionController.createPrescription);
 
 /**
  * @swagger

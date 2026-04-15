@@ -22,8 +22,9 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     console.log('Modèles Sequelize synchronisés.');
 
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`Serveur démarré sur le port ${PORT}`);
+      console.log(`Accès réseau: http://0.0.0.0:${PORT}`);
     });
   } catch (error) {
     console.error('Erreur lors du démarrage du serveur:', error);
